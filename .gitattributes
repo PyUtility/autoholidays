@@ -1,0 +1,29 @@
+# .gitattributes for Python-Files
+# Check https://github.com/alexkaratarakis/gitattributes for More Informations
+# Video Tutorial is available at https://www.youtube.com/watch?v=2E_ICZagmj4
+
+# Auto Detect text-Files and perform LF Normalizations
+* text=auto
+
+#
+# The above will handle all files NOT found below
+#
+
+# text/documents/latex files
+*.md     text diff=markdown
+
+##---------------------------------------------------
+# Python
+##---------------------------------------------------
+
+# Basic .gitattributes for a python repo.
+
+# Source files
+# ============
+*.py  text diff=python
+*.pxd text diff=python
+*.py3 text diff=python
+*.pyi text diff=python
+*.pyw text diff=python
+*.pyx text diff=python
+*.pyz text diff=python
