@@ -9,3 +9,11 @@ native base construct uses :mod:`pydantic` class for data validation
 and serialization.
 """
 
+from autoholidays.core.calendar import ENUMDays
+from autoholidays.core.person import CreditDays, PersonConstruct
+
+__all__ = [
+    "ENUMDays",
+    "CreditDays",
+    "PersonConstruct"
+]

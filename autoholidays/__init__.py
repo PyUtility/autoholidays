@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 AutoHolidays - A Powerful Algorithm to Plan Optimized Holidays
@@ -15,6 +15,28 @@ diverse organizational policies and regional calendars.
 import os
 
 # ? package follows https://peps.python.org/pep-0440/
-__version__ = open(
-    os.path.join(os.path.dirname(__file__), "VERSION"), "r"
-).read().strip()
+with open(os.path.join(os.path.dirname(__file__), "VERSION")) as fh:
+    __version__ = fh.read().strip()
+
+# ! let's check for package hard dependencies which must be available
+hard_dependencies = ["pydantic"]
+missing_dependencies = []
+
+for dependency in hard_dependencies:
+    try:
+        __import__(dependency)
+    except ImportError as err:
+        missing_dependencies.append(err.name)
+
+if missing_dependencies:
+    raise ImportError(
+        f"Missing hard dependencies: {missing_dependencies}."
+    )
+
+from autoholidays.api import *  # noqa: F403, E402
+
+__all__ = [
+    "ENUMDays",
+    "CreditDays",
+    "PersonConstruct",
+]
