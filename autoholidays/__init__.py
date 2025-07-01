@@ -38,5 +38,6 @@ from autoholidays.api import *  # noqa: F403, E402
 __all__ = [
     "ENUMDays",
     "CreditDays",
+    "PlanningCycle",
     "PersonConstruct",
 ]

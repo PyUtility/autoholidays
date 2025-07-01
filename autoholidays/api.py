@@ -19,5 +19,6 @@ from autoholidays.core import (  # noqa: F401
 __all__ = [
     "ENUMDays",
     "CreditDays",
+    "PlanningCycle",
     "PersonConstruct",
 ]
