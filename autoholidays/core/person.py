@@ -39,12 +39,14 @@ class PersonConstruct(BaseModel):
     :param name: A string value representing the name of the person,
         this can be anything and is not tracked.
 
-    :type  holidays: List[dt.date]
+    :type  holidays: List[Union[dt.date, HolidayBase]]
     :param holidays: A list of holidays for the person, this can be
         any number of days in the planning cycle. If any value is
         provided outside the planning cycle then it is ignored. A
         value in both ``holidays`` and ``weekoff`` is considered only
-        once, to get the ordered list of applicable holidays.
+        once, to get the ordered list of applicable holidays. The
+        holiday can also be passed using :mod:`holidays` module, check
+        https://pypi.org/project/holidays/ for more information.
 
     :type  creditDays: List[CreditDays]
     :param creditDays: A list of days when leave is credited to the
@@ -56,12 +58,6 @@ class PersonConstruct(BaseModel):
     :param requiredLeaves: Days where the user requires compulsory
         leaves, this is a list of dates. The algorithm will try to
         club these days with holiday list for a better suggestion.
-
-    :type  regionalHolidays: List[Union[dt.date, HolidayBase]]
-    :param regionalHolidays: A list of regional holidays for the
-        person, this can either be manually defined as a list of dates
-        or a list of :class:`holidays.HolidayBase` objects; check
-        https://pypi.org/project/holidays/ for more information.
 
     :type  opening: int
     :param opening: Opening leave balance for the person, defaults
@@ -75,10 +71,13 @@ class PersonConstruct(BaseModel):
     """
 
     name : str
-    holidays : List[dt.date]
+
+    holidays : List[Union[dt.date, HolidayBase]] = Field(
+        ..., description = "List of Holidays"
+    )
+
     creditDays : List[CreditDays]
     requiredLeaves : List[dt.date]
-    regionalHolidays : List[Union[dt.date, HolidayBase]]
 
     opening : int = Field(
         0, ge = 0, description = "Opening Leave Balance"
