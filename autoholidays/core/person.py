@@ -9,7 +9,8 @@ days off, entitlements, and constraints.
 
 import datetime as dt
 
-from typing import List
+from typing import List, Union
+from holidays import HolidayBase
 from pydantic import BaseModel, Field
 
 from autoholidays.core.calendar import ENUMDays
@@ -56,6 +57,12 @@ class PersonConstruct(BaseModel):
         leaves, this is a list of dates. The algorithm will try to
         club these days with holiday list for a better suggestion.
 
+    :type  regionalHolidays: List[Union[dt.date, HolidayBase]]
+    :param regionalHolidays: A list of regional holidays for the
+        person, this can either be manually defined as a list of dates
+        or a list of :class:`holidays.HolidayBase` objects; check
+        https://pypi.org/project/holidays/ for more information.
+
     :type  opening: int
     :param opening: Opening leave balance for the person, defaults
         to 0 (zero days).
@@ -71,6 +78,7 @@ class PersonConstruct(BaseModel):
     holidays : List[dt.date]
     creditDays : List[CreditDays]
     requiredLeaves : List[dt.date]
+    regionalHolidays : List[Union[dt.date, HolidayBase]]
 
     opening : int = Field(
         0, ge = 0, description = "Opening Leave Balance"

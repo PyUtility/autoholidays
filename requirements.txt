@@ -1,1 +1,2 @@
+holidays>=0.92
 pydantic==2.12.5
