@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 """
-A person is an end user of the application, that uses the algorithms
+A person is an end user of the application that uses the algorithms
 to plan their leave. The person construct contains information about
 the user to make leave planning decisions, for example number of
 days off, entitlements, and constraints.
@@ -13,24 +13,25 @@ from typing import List, Union
 from holidays import HolidayBase
 from pydantic import BaseModel, Field
 
-from autoholidays.core.calendar import ENUMDays
+from autoholidays.core.static import ENUMDays
+
 
 class CreditDays(BaseModel):
     """
     A :mod:`pydantic` base model to define leave credit days for
     the planning cycle. The credit days can then be passed to the
     :class:`PersonConstruct` class as a list of credit days, thus
-    allowing arbitary types number of credit days to be passed.
+    allowing arbitrary numbers of credit day types to be passed.
     """
 
     name : str = Field(..., description = "Name/Type of Leave")
-    days : int = Field(..., ge = 0, description = "Number of Days")
+    days : int = Field(..., gt = 0, description = "Number of Days")
     date : dt.date = Field(..., description = "Date of Leave Credit")
 
 
 class PersonConstruct(BaseModel):
     """
-    The person constuct is defined considering defualt attributes and
+    The person construct is defined considering default attributes and
     properties which might be required to find the optimal holidays.
     A basic information about the person, leave cycle, entitlements,
     and constraints are included in this construct.
@@ -57,11 +58,11 @@ class PersonConstruct(BaseModel):
     :type  requiredLeaves: List[dt.date]
     :param requiredLeaves: Days where the user requires compulsory
         leaves, this is a list of dates. The algorithm will try to
-        club these days with holiday list for a better suggestion.
+        club these days with the holiday list for a better suggestion.
 
     :type  opening: int
     :param opening: Opening leave balance for the person, defaults
-        to 0 (zero days).
+        to ``0`` (zero days).
 
     :type  weekoff: List[ENUMDays]
     :param weekoff: List of weekly off for the person, defaults to
