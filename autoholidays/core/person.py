@@ -9,8 +9,7 @@ days off, entitlements, and constraints.
 
 import datetime as dt
 
-from typing import List, Union
-from holidays import HolidayBase
+from typing import List, Union, Dict
 from pydantic import BaseModel, Field
 
 from autoholidays.core.static import ENUMDays
@@ -40,7 +39,7 @@ class PersonConstruct(BaseModel):
     :param name: A string value representing the name of the person,
         this can be anything and is not tracked.
 
-    :type  holidays: List[Union[dt.date, HolidayBase]]
+    :type  holidays: List[Union[dt.date, Dict[dt.date, str]]]
     :param holidays: A list of holidays for the person, this can be
         any number of days in the planning cycle. If any value is
         provided outside the planning cycle then it is ignored. A
@@ -73,7 +72,7 @@ class PersonConstruct(BaseModel):
 
     name : str
 
-    holidays : List[Union[dt.date, HolidayBase]] = Field(
+    holidays : List[Union[dt.date, Dict[dt.date, str]]] = Field(
         ..., description = "List of Holidays"
     )
 
