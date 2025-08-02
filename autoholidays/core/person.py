@@ -39,7 +39,7 @@ class PersonConstruct(BaseModel):
     :param name: A string value representing the name of the person,
         this can be anything and is not tracked.
 
-    :type  holidays: List[Union[dt.date, Dict[dt.date, str]]]
+    :type  holidays: Union[List[dt.date], Dict[dt.date, str]]
     :param holidays: A list of holidays for the person, this can be
         any number of days in the planning cycle. If any value is
         provided outside the planning cycle then it is ignored. A
@@ -57,7 +57,8 @@ class PersonConstruct(BaseModel):
     :type  requiredLeaves: List[dt.date]
     :param requiredLeaves: Days where the user requires compulsory
         leaves, this is a list of dates. The algorithm will try to
-        club these days with the holiday list for a better suggestion.
+        club these days with the holiday list for a better suggestion;
+        defaults to empty list, meaning no priority.
 
     :type  opening: int
     :param opening: Opening leave balance for the person, defaults
@@ -72,12 +73,14 @@ class PersonConstruct(BaseModel):
 
     name : str
 
-    holidays : List[Union[dt.date, Dict[dt.date, str]]] = Field(
+    holidays : Union[List[dt.date], Dict[dt.date, str]] = Field(
         ..., description = "List of Holidays"
     )
 
     creditDays : List[CreditDays]
-    requiredLeaves : List[dt.date]
+    requiredLeaves : List[dt.date] = Field(
+        [], description = "List of Required Leaves"
+    )
 
     opening : int = Field(
         0, ge = 0, description = "Opening Leave Balance"
