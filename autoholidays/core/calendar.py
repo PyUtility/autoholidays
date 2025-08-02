@@ -9,7 +9,7 @@ holidays - paid, regional, etc.
 import datetime as dt
 
 from typing import List
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, model_validator
 
 from autoholidays.core.person import PersonConstruct
 
@@ -34,3 +34,19 @@ class PlanningCycle(BaseModel):
     start : dt.date
     final : dt.date
     persons : List[PersonConstruct]
+
+
+    @model_validator(mode = "after")
+    def checkDates(self) -> 'PlanningCycle':
+        assert self.start <= self.final, \
+            "Start Date ≥ Final Date is Invalid"
+        
+        return self
+
+
+    @property
+    def allDates(self) -> List[dt.date]:
+        return [
+            self.start + dt.timedelta(days = days)
+            for days in range((self.final - self.start).days + 1)
+        ]
