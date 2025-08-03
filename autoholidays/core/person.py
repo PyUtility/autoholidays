@@ -10,7 +10,7 @@ days off, entitlements, and constraints.
 import datetime as dt
 
 from typing import List, Union, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from autoholidays.core.static import ENUMDays
 
@@ -90,3 +90,19 @@ class PersonConstruct(BaseModel):
         [ENUMDays.SATURDAY, ENUMDays.SUNDAY],
         description = "List of Weekly Off Days"
     )
+
+
+    @field_validator("holidays", mode = "before")
+    @classmethod
+    def sortedHolidays(
+        cls, value : Union[List[dt.date], Dict[dt.date, str]]
+    ) -> List[dt.date]:
+        """
+        Return a list of entitled leaves for the person, the function
+        ensures that the values are always a list of unique dates.
+        """
+
+        value = list(set(value)) if isinstance(value, list) else \
+            list(set(value.keys()))
+        
+        return sorted(value)
