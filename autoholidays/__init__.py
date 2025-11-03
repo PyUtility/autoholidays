@@ -40,4 +40,5 @@ __all__ = [
     "CreditDays",
     "PlanningCycle",
     "PersonConstruct",
+    "extendedWeekends"
 ]
