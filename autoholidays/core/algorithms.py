@@ -22,6 +22,6 @@ def extendedWeekends(dates : List[dt.date]) -> List[List[dt.date]]:
             groups.append([nxt])
 
     return [
-        [ dt.datetime.fromordinal(date) for date in group ]
+        [ dt.datetime.fromordinal(date).date() for date in group ]
         for group in groups
     ]
