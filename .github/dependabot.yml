@@ -33,5 +33,5 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "bot/ghaction"
-      - "idependencies/ghactions"
+      - "bot/ghactions"
+      - "dependencies/ghactions"
