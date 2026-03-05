@@ -4,7 +4,7 @@
 
 All notable changes to this project will be documented in this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [PEP0440](https://peps.python.org/pep-0440/)
-styling guide. For full details, see the [commit logs](https://github.com/sharkutilities/pandas-wizard/commits).
+styling guide. For full details, see the [commit logs](https://github.com/PyUtility/autoholidays/commits).
 
 ## `PEP0440` Styling Guide
 
@@ -37,11 +37,10 @@ this [link](https://python-semver.readthedocs.io/en/latest/advanced/convert-pypi
 ## Release Note(s)
 
 The release notes are documented, the list of changes to each different release are documented. The `major.minor` patch are indicated
-under `h3` tags, while the `micro` and "version identifiers" are listed under `h4` and subsequent headlines. The legend for
-changelogs are provided in the detail pane, while the version wise note is as available below.
+under `h3` tags, while the `micro` and "version identifiers" are listed under `h4` and subsequent headlines.
 
 <details>
-<summary>Click to open Legend(s) Styilng Guide</summary>
+<summary>Click to open <code>Legend Guidelines</code> for the Project CHANGELOG.md File</summary>
 
   * 🎉 - **Major Feature** : something big that was not available before.
   * ✨ - **Feature Enhancement** : a miscellaneous minor improvement of an existing feature.
@@ -49,9 +48,19 @@ changelogs are provided in the detail pane, while the version wise note is as av
   * ⚙️ - **Code Efficiency** : an existing feature now may not require as much computation or memory.
   * 💣 - **Code Refactoring** : a breakable change often associated with `major` version bump.
 
-</summary>
 </details>
 
-### Version: `XXX` | Release Date:
+### AutoHolidays v0.0.2.dev0 | 2026-03-05
+
+A basic version (currently in planning stage) that underlines the capabilities, objective of the package. In addition, the version
+tag denotes that this is a developmental release and may change significantly in due development course.
+
+The package is registered in PyPI, and can be installed using `pip` command as follows:
+
+```shell
+pip install autoholidays
+```
+
+Something awesome is being cooked, stay tuned!
 
 </div>
