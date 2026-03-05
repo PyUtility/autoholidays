@@ -1,0 +1,37 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+
+  # maintain dependecies for python-packages using pip
+  - package-ecosystem: "pip"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    labels:
+      - "bot/dependabot"
+      - "dependencies/pip"
+    assignees:
+      - "ZenithClown"
+
+    # add commit-message with prefix to determine dependency group
+    # more information available in documentation
+    commit-message:
+      prefix: "pip-prod"
+      prefix-development: "pip-dev"
+      include: "scope"
+
+    # limit number of open-pull requests for dependabot
+    open-pull-requests-limit: 10
+      
+  # maintain dependecies for github-actions
+  - package-ecosystem: "github-actions"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "monthly"
+    labels:
+      - "bot/ghaction"
+      - "idependencies/ghactions"
