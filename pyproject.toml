@@ -1,0 +1,50 @@
+[build-system]
+requires = [
+    "holidays>=0.92",
+    "pydantic==2.12.5",
+    "setuptools==82.0.0",
+    "wheel==0.46.3",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoholidays"
+dynamic = ["version"]
+description = "Intelligent algorithm-driven planner to calculate holidays."
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.12"
+license = {file = "LICENSE" }
+
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Utilities",
+    "Topic :: Office/Business",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = [
+    "holidays>=0.92",
+    "pydantic==2.12.5",
+]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "examples*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "autoholidays.__version__"}
