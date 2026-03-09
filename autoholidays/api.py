@@ -16,6 +16,5 @@ __all__ = [
     "ENUMDays",
     "CreditDays",
     "PlanningCycle",
-    "PersonConstruct",
-    "extendedWeekends"
+    "PersonConstruct"
 ]

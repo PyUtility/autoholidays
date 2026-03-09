@@ -11,13 +11,11 @@ and serialization.
 
 from autoholidays.core.static import ENUMDays
 from autoholidays.core.calendar import PlanningCycle
-from autoholidays.core.algorithms import extendedWeekends
 from autoholidays.core.person import CreditDays, PersonConstruct
 
 __all__ = [
     "ENUMDays",
     "CreditDays",
     "PlanningCycle",
-    "PersonConstruct",
-    "extendedWeekends"
+    "PersonConstruct"
 ]
