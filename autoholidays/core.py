@@ -162,3 +162,4 @@ class AutoHoliday:
             else:
                 person.holidays = sorted(current)
 
+        return persons
