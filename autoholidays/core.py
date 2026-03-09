@@ -8,7 +8,7 @@ person based on different scenarios.
 
 import datetime as dt
 
-from typing import List
+from typing import List, Tuple, Dict
 
 from autoholidays.person import PersonConstruct
 from autoholidays.calendar import PlanningCycle, ENUMDays
@@ -59,9 +59,38 @@ class AutoHoliday:
 
         strategy = self.__validate_strategy__(strategy)
 
+        spacing = self.spacing[strategy]
+        lengthRange = self.length[strategy]
+        return spacing, lengthRange
+
+
+    @property
+    def spacing(self) -> int:
+        """
+        A good planner is one that tries to create a balanced holiday
+        over the planning years and for this seperation (or space)
+        between two holiday is essential. The attribute returns the
+        space based on a given strategy.
+        """
+
+        return dict(balanced = 21)
+
+
+    @property
+    def length(self) -> Tuple[int, int]:
+        """
+        Set the minimum and maximum length of total holidays (that
+        includes public holidays, weekly off and leave days) that an
+        individual wish to avail at one single time.
+        """
+
+        return dict(balanced = (3, 15))
+
 
     @staticmethod
-    def extendedWeekends(dates : List[dt.date]) -> List[List[dt.date]]:
+    def extendedWeekends(
+        dates : List[dt.date]
+    ) -> Dict[int, List[dt.date]]:
         """
         Given a list of days, iteratively calculate the difference
         between consecutive days and returns a list of days that can
@@ -99,11 +128,11 @@ class AutoHoliday:
             else:
                 groups.append([nxt])
 
-        return [
-            [
+        return {
+            idx : [
                 dt.datetime.fromordinal(date).date() for date in group
-            ] for group in groups
-        ]
+            ] for idx, group in enumerate(groups)
+        }
 
 
     @staticmethod
@@ -161,12 +190,12 @@ class AutoHoliday:
         is available.
         """
 
-        start, final = self.planning.start, self.planning.final
+        start, final = self.cycle.start, self.cycle.final
         for person in persons:
             updated = [
                 holiday for holiday in person.holidays
                 if holiday >= start and holiday <= final
-            ] + self.weekOffs(self.planning.allDays, person.weekoff)
+            ] + self.weekOffs(self.cycle.allDays, person.weekoff)
 
             person.holidays = sorted(updated)
 
