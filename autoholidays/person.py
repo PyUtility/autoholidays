@@ -12,9 +12,7 @@ import datetime as dt
 from typing import List, Union, Dict
 from pydantic import BaseModel, Field, field_validator
 
-from autoholidays.calendar import ENUMDays
-from autoholidays.calendar import CreditDays
-
+from autoholidays.calendar import ENUMDays, CreditDays
 
 class PersonConstruct(BaseModel):
     """
