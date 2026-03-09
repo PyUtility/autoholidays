@@ -6,7 +6,6 @@ and finally strategizes an optimal holiday for a person or a group of
 person based on different scenarios.
 """
 
-import warnings
 import datetime as dt
 
 from typing import List
@@ -45,7 +44,6 @@ class AutoHoliday:
 
         self.persons = self.__validate_holidays__(persons)
         self.strategy = self.__validate_strategy__(strategy)
-        return persons
 
 
     @staticmethod
@@ -144,22 +142,18 @@ class AutoHoliday:
     ) -> List[PersonConstruct]:
         """
         Validate the list of holidays for the person(s) and returns
-        valid days, this is helpful in case of invalid holidays, i.e.,
-        any holiday that is falling outside of the planning cycle.
+        valid days which is a combination of all the weekly off the
+        individual is eligible for, and all the public holidays that
+        is available.
         """
 
         start, final = self.planning.start, self.planning.final
         for person in persons:
-            current = person.holidays
             updated = [
                 holiday for holiday in person.holidays
                 if holiday >= start and holiday <= final
-            ]
+            ] + self.weekOffs(self.planning.allDays, person.weekoff)
 
-            if current != updated:
-                warnings.warn(f"Holiday's Updated for {person.name}")
-                person.holidays = sorted(updated)
-            else:
-                person.holidays = sorted(current)
+            person.holidays = sorted(updated)
 
         return persons
