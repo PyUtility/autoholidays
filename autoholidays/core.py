@@ -19,31 +19,45 @@ class AutoHoliday:
     person. The class is initialized with a planning cycle, set of
     person(s), and a strategy to plan the holiday.
 
+    :type  cycle: PlanningCycle
+    :param cycle: A fixed planning cycle which is same across all the
+        person(s) to plan holidays.
+
     :type  persons: List[PersonConstruct]
     :param persons: A list of person(s) to plan for, uses the persons
         construct defined in :mod:`autoholidays.person`. At least,
         one person is required for planning.
-
-    :type  planning: PlanningCycle
-    :param planning: A fixed planning cycle which is same across all
-        the person(s) to plan holidays.
-
-    :type  strategy: str
-    :param strategy: A planning strategy that dustributes the holiday
-        in a specific way. Defaults to ``balanced`` approach - that
-        mixes short and long holidays.
     """
 
     def __init__(
         self,
+        cycle : PlanningCycle,
         persons : List[PersonConstruct],
-        planning : PlanningCycle,
-        strategy : str = "balanced"
     ) -> None:
-        self.planning = planning
+        """
+        Initialization method that captures the planning cycle, and
+        the person(s) to plan optimal holidays. The initialization
+        class is so defined that different types of strategy can be
+        tested using the ``plan`` method and the user can finally
+        choose the one that suits them the best.
+        """
 
-        self.persons = self.__validate_holidays__(persons)
-        self.strategy = self.__validate_strategy__(strategy)
+        self.cycle = cycle
+        self.persons = self.__update_holidays__(persons)
+
+
+    def plan(self, strategy : str = "balanced") -> List[List[dt.date]]:
+        """
+        Plan optimal holidays for a group of person based on a
+        planning strategy.
+
+        :type  strategy: str
+        :param strategy: A planning strategy that dustributes the
+            holiday in a specific way. Defaults to ``balanced``
+            approach - that mixes short and long holidays.
+        """
+
+        strategy = self.__validate_strategy__(strategy)
 
 
     @staticmethod
@@ -136,7 +150,7 @@ class AutoHoliday:
         return strategy
 
 
-    def __validate_holidays__(
+    def __update_holidays__(
         self,
         persons : List[PersonConstruct]
     ) -> List[PersonConstruct]:
