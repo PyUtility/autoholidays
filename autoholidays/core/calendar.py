@@ -6,6 +6,7 @@ calculate and define the planning period and to identify different
 holidays - paid, regional, etc.
 """
 
+import warnings
 import datetime as dt
 
 from typing import List, Dict
@@ -37,6 +38,32 @@ class PlanningCycle(BaseModel):
     persons : List[PersonConstruct]
 
 
+    @model_validator(mode = "after")
+    def validator(self) -> "PlanningCycle":
+        """
+        Validate the planning cycle, and update the holiday list for
+        each person so that holidays are within the planning cycle.
+        """
+
+        assert self.start <= self.final, \
+            "Start Date ≥ Final Date is Invalid"
+
+        for person in self.persons:
+            current = person.holidays
+            updated = [
+                holiday for holiday in person.holidays
+                if holiday >= self.start and holiday <= self.final
+            ]
+
+            if current != updated:
+                warnings.warn(f"Holiday's Updated for {person.name}")
+                person.holidays = sorted(updated)
+            else:
+                person.holidays = sorted(current)
+
+        return self
+
+
     @property
     def personHolidays(self) -> Dict[int, List[dt.date]]:
         """
@@ -54,14 +81,6 @@ class PlanningCycle(BaseModel):
             ])
             for idx, person in enumerate(self.persons)
         }
-
-
-    @model_validator(mode = "after")
-    def checkDates(self) -> 'PlanningCycle':
-        assert self.start <= self.final, \
-            "Start Date ≥ Final Date is Invalid"
-        
-        return self
 
 
     @property
@@ -88,7 +107,7 @@ class PlanningCycle(BaseModel):
         fly. The function does not consider the planning cycle.
 
         :type  dates: List[dt.date]
-        :param dates: A list of dates all dates in the planning cycle,
+        :param dates: A list of all dates in the planning cycle,
             typically this is always ``self.allDates`` property.
 
         :type  weekoffs: List[ENUMDays]
