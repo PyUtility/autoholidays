@@ -64,6 +64,40 @@ class AutoHoliday:
         return spacing, lengthRange
 
 
+    @staticmethod
+    def planOne(person : PersonConstruct) -> List[List[dt.date]]:
+        """
+        A static method that calculates the optimal holiday for a
+        single person, then returns the list of holidays. The method
+        can then be used extended to plan for a group of person.
+        """
+
+        extWk = {
+            key : dict(length = len(value), dates = value)
+            for key, value in AutoHoliday.extendedWeekends(
+                person.holidays
+            ).items()
+        }
+
+        # get space between two consecutive long weekends
+        spaces = {
+            (key, key + 1) : (
+                extWk[key + 1]["dates"][0] - extWk[key]["dates"][-1]
+            ).days for key in list(extWk.keys())[:-1]
+        }
+
+        # sort the extended weekends based on the length of days
+        extWk = dict(sorted(
+            extWk.items(), reverse = True,
+            key = lambda x : x[1]["length"]
+        ))
+
+        # also sort the spaces based on the gaps between two weekends
+        spaces = dict(sorted(spaces.items(), key = lambda x : x[1]))
+
+        return extWk, spaces
+
+
     @property
     def spacing(self) -> int:
         """
