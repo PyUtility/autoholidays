@@ -9,7 +9,7 @@ person based on different scenarios.
 import datetime as dt
 
 from typing import List
-from autoholidays.core.calendar import PlanningCycle
+from autoholidays.calendar_ import PlanningCycle
 
 class AutoHoliday:
     def __init__(self, planning : PlanningCycle) -> None:

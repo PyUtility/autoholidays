@@ -12,20 +12,8 @@ import datetime as dt
 from typing import List, Union, Dict
 from pydantic import BaseModel, Field, field_validator
 
-from autoholidays.core.static import ENUMDays
-
-
-class CreditDays(BaseModel):
-    """
-    A :mod:`pydantic` base model to define leave credit days for
-    the planning cycle. The credit days can then be passed to the
-    :class:`PersonConstruct` class as a list of credit days, thus
-    allowing arbitrary numbers of credit day types to be passed.
-    """
-
-    name : str = Field(..., description = "Name/Type of Leave")
-    days : int = Field(..., gt = 0, description = "Number of Days")
-    date : dt.date = Field(..., description = "Date of Leave Credit")
+from autoholidays.calendar import ENUMDays
+from autoholidays.calendar import CreditDays
 
 
 class PersonConstruct(BaseModel):

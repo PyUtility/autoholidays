@@ -12,8 +12,8 @@ import datetime as dt
 from typing import List, Dict
 from pydantic import BaseModel, model_validator
 
-from autoholidays.core.static import ENUMDays
-from autoholidays.core.person import PersonConstruct
+from autoholidays.calendar import ENUMDays
+from autoholidays.person import PersonConstruct
 
 
 class PlanningCycle(BaseModel):
