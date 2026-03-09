@@ -12,7 +12,7 @@ individuals and teams, it supports coordinated planning and adapts to
 diverse organizational policies and regional calendars.
 """
 
-__version__ = "v0.0.2.dev0"
+__version__ = "v0.0.2.dev1"
 
 # ? added init time options registrations from autoholidays.api
 from autoholidays.core import AutoHoliday  # noqa: F403, E402
