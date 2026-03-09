@@ -50,6 +50,17 @@ under `h3` tags, while the `micro` and "version identifiers" are listed under `h
 
 </details>
 
+### AutoHolidays v0.0.2.dev1 | 2026-03-10
+
+A basic version that can calculate the holidays for a single person based on a set of dynamic programming; however the coding
+is not stable and results in holidays being pushed to the beginning of the planning cycle.
+
+The package is registered in PyPI, and can be installed using `pip` command as follows:
+
+```shell
+pip install autoholidays
+```
+
 ### AutoHolidays v0.0.2.dev0 | 2026-03-05
 
 A basic version (currently in planning stage) that underlines the capabilities, objective of the package. In addition, the version
