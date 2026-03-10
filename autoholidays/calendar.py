@@ -93,3 +93,18 @@ class PlanningCycle(BaseModel):
             self.start + dt.timedelta(days = days)
             for days in range((self.final - self.start).days + 1)
         ]
+
+
+    @property
+    def startOridinal(self) -> int:
+        return self.start.toordinal()
+
+
+    @property
+    def finalOridinal(self) -> int:
+        return self.final.toordinal()
+
+
+    @property
+    def allDaysOridinal(self) -> List[int]:
+        return [day.toordinal() for day in self.allDays]
