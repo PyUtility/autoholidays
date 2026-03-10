@@ -96,15 +96,15 @@ class PlanningCycle(BaseModel):
 
 
     @property
-    def startOridinal(self) -> int:
+    def startOrdinal(self) -> int:
         return self.start.toordinal()
 
 
     @property
-    def finalOridinal(self) -> int:
+    def finalOrdinal(self) -> int:
         return self.final.toordinal()
 
 
     @property
-    def allDaysOridinal(self) -> List[int]:
+    def allDaysOrdinal(self) -> List[int]:
         return [day.toordinal() for day in self.allDays]
