@@ -8,7 +8,8 @@ person based on different scenarios.
 
 import datetime as dt
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
+from itertools import pairwise, chain
 
 from autoholidays.person import PersonConstruct
 from autoholidays.calendar import PlanningCycle, ENUMDays
@@ -46,141 +47,158 @@ class AutoHoliday:
         self.persons = self.__update_holidays__(persons)
 
 
-    def plan(self, strategy : str = "balanced") -> List[List[dt.date]]:
+    def plan(
+        self,
+        spacing : int = 17,
+        lengthRange : Tuple[int, int] = (3, 15)
+    ) -> List[List[dt.date]]:
         """
         Plan optimal holidays for a group of person based on a
-        planning strategy.
+        planning strategy, uses dynamic programming to iterate over
+        the holidays. The function returns a list of list of holidays
+        ideal for all the person(s).
 
-        :type  strategy: str
-        :param strategy: A planning strategy that dustributes the
-            holiday in a specific way. Defaults to ``balanced``
-            approach - that mixes short and long holidays.
+        :type  spacing: int
+        :param spacing: A parameter to control and spread the holidays
+            over the planning cycle by limiting the minimum number of
+            days between two consecutive days for all individual(s).
+            Defaults to 17, i.e., atleast 17 days gap between the two
+            consecutive holidays, unless there is a extended holiday.
+
+        :type  lengthRange: Tuple[int, int]
+        :param lengthRange: A tuple of minimum and maximum number of
+            days for a holiday, defaults to (3, 15).
         """
 
-        strategy = self.__validate_strategy__(strategy)
+        start, final = self.cycle.start, self.cycle.final
+        startOrdinal, finalOrdinal = list(map(
+            lambda date: date.toordinal(), [start, final]
+        ))
 
-        spacing = self.spacing[strategy]
-        lengthRange = self.length[strategy]
-        return spacing, lengthRange
+        # convert the holiday list into a set of values; can use union
+        individualHolidays = [
+            set([day.toordinal() for day in person.holidays])
+            for person in self.persons
+        ]
+        collectiveHolidaysSet = set().union(*individualHolidays)
+        collectiveHolidays = sorted(collectiveHolidaysSet)
+
+        def walkLeft(hOrd : int) -> int:
+            """
+            Given an ideal ordinal date from the collective holidays
+            of all the individual(s), walks to the left to find the
+            start of its surrounding off-day block. Opposite function
+            is ``walkRight`` which iterates on the right side.
+            """
+            dOrd = hOrd - 1
+
+            while (
+                (dOrd >= startOrdinal) and
+                (dOrd not in collectiveHolidaysSet)
+            ):
+                dOrd -= 1
+
+            if dOrd < startOrdinal:
+                return startOrdinal
+
+            while (
+                ((dOrd - 1) >= startOrdinal) and
+                ((dOrd - 1) in collectiveHolidaysSet)
+            ):
+                dOrd -= 1
+
+            return dOrd
+
+        def walkRight(hOrd : int) -> int:
+            """
+            Given an ideal ordinal date from the collective holidays
+            of all the individual(s), walks to the right to find the
+            end of its surrounding off-day block. Opposite function
+            is ``walkLeft`` which iterates on the left side.
+            """
+            dOrd = hOrd + 1
+
+            while (
+                (dOrd <= finalOrdinal) and
+                (dOrd not in collectiveHolidaysSet)
+            ):
+                dOrd += 1
+
+            if dOrd > finalOrdinal:
+                return finalOrdinal
+
+            while (
+                ((dOrd + 1) <= finalOrdinal) and
+                ((dOrd + 1) in collectiveHolidaysSet)
+            ):
+                dOrd += 1
+
+            return dOrd
+
+        # ! collect unique off-day blocks from all collective holidays
+        blockSet : Set[Tuple[int, int]] = set()
+        for day in collectiveHolidays:
+            blockSet.add((walkLeft(day), walkRight(day)))
+
+        # ! filter blocks by lengthRange span and spacing gap constraints
+        minLen, maxLen = lengthRange
+        approvedBlocks : List[Tuple[int, int]] = []
+        lastRight : int = startOrdinal - spacing - 1
+
+        for left, right in sorted(blockSet):
+            span = right - left + 1
+            if span < minLen or span > maxLen:
+                continue
+            if left < lastRight + spacing:
+                continue
+            approvedBlocks.append((left, right))
+            lastRight = right
+
+        # ! calculate the final return result iterable
+        return [
+            [
+                dt.datetime.fromordinal(dOrd).date()
+                for dOrd in range(left, right + 1)
+            ]
+            for left, right in approvedBlocks
+        ]
 
 
     @staticmethod
-    def planOne(
+    def calculateLeaveDays(
         person : PersonConstruct,
-        all_days : List[dt.date],
-        spacing : int,
-        length_range : Tuple[int, int]
-    ) -> List[List[dt.date]]:
+        holidays : List[List[dt.date]]
+    ) -> int:
         """
-        Plan the Optimal Holiday Breaks for a Single Person
+        Calculate the Number of Leave Days Required by a Person.
 
-        Uses dynamic programming with prefix-sum cost calculation to find
-        the best set of holiday breaks for a single person. The algorithm
-        maximises total consecutive days off while respecting spacing and
-        length constraints and the available paid time off (PTO) budget.
-
-        The approach mirrors the strategy used by holiday-optimizer.com:
-        prefix sums allow O(1) PTO-cost queries for any date range, and
-        a running-best DP table avoids re-scanning earlier states, giving
-        an overall O(n x L) time complexity where ``n`` is the number of
-        days in the planning cycle and ``L`` is ``max_len - min_len + 1``.
+        Iterates over all days in each approved holiday block and
+        counts the days that are not already covered by the person's
+        existing public holidays or weekly offs. The result is the
+        number of leave days the person must consume to enjoy the
+        full off-period.
 
         :type  person: PersonConstruct
-        :param person: A person construct whose ``holidays`` list already
-            contains the merged set of public holidays and weekly off days
-            (as produced by :meth:`__update_holidays__`).
+        :param person: The person construct for whom the leave days
+            are to be calculated, using the construct defined in
+            :mod:`autoholidays.person`.
 
-        :type  all_days: List[dt.date]
-        :param all_days: The complete ordered list of calendar dates in the
-            planning cycle, typically ``self.cycle.allDays``.
+        :type  holidays: List[List[dt.date]]
+        :param holidays: A list of approved holiday blocks, typically
+            the return value of :func:`plan`, where each inner list
+            contains all calendar dates in one off-period block.
 
-        :type  spacing: int
-        :param spacing: Minimum number of calendar days that must separate
-            the end of one holiday break from the start of the next.
-
-        :type  length_range: Tuple[int, int]
-        :param length_range: The ``(min, max)`` inclusive range for the
-            total number of days in a single holiday break (combining
-            free days and PTO days).
-
-        :rtype:  List[List[dt.date]]
-        :return: An ordered list of holiday break blocks where each block
-            is a list of consecutive calendar dates forming one optimal
-            break. Returns an empty list when no valid plan exists.
+        :rtype:  int
+        :return: Total number of leave days the person needs to take
+            across all provided holiday blocks.
         """
 
-        free_days = set(person.holidays)
-        min_len, max_len = length_range
-        n = len(all_days)
-
-        is_free = [1 if d in free_days else 0 for d in all_days]
-        prefix = AutoHoliday.__prefix_free_days__(is_free)
-
-        def pto_cost(i : int, j : int) -> int:
-            return (j - i + 1) - (prefix[j + 1] - prefix[i])
-
-        empty = (0, 0, [])
-
-        def better(a : Tuple, b : Tuple) -> bool:
-            return a[0] > b[0] or (a[0] == b[0] and a[1] < b[1])
-
-        dp = [None] * (n + 1)
-        dp[0] = empty
-        best_up_to = [None] * (n + 1)
-        best_up_to[0] = empty
-
-        for j in range(n):
-            for length in range(min_len, min(max_len, j + 1) + 1):
-                i = j - length + 1
-                pto = pto_cost(i, j)
-                pta = AutoHoliday.__pta_at_date__(person, all_days[i])
-
-                prev_idx = max(0, i - spacing)
-                prev = best_up_to[prev_idx] if best_up_to[prev_idx] is not None else empty
-                total_pto = prev[1] + pto
-
-                if total_pto > pta:
-                    continue
-
-                candidate = (
-                    prev[0] + length,
-                    total_pto,
-                    prev[2] + [list(all_days[i : j + 1])]
-                )
-
-                if dp[j + 1] is None or better(candidate, dp[j + 1]):
-                    dp[j + 1] = candidate
-
-            best_up_to[j + 1] = best_up_to[j]
-            if dp[j + 1] is not None and (
-                best_up_to[j] is None or better(dp[j + 1], best_up_to[j])
-            ):
-                best_up_to[j + 1] = dp[j + 1]
-
-        return best_up_to[n][2] if best_up_to[n] is not None else []
-
-
-    @property
-    def spacing(self) -> int:
-        """
-        A good planner is one that tries to create a balanced holiday
-        over the planning years and for this seperation (or space)
-        between two holiday is essential. The attribute returns the
-        space based on a given strategy.
-        """
-
-        return dict(balanced = 21)
-
-
-    @property
-    def length(self) -> Tuple[int, int]:
-        """
-        Set the minimum and maximum length of total holidays (that
-        includes public holidays, weekly off and leave days) that an
-        individual wish to avail at one single time.
-        """
-
-        return dict(balanced = (3, 15))
+        personHolidaySet = set(day.toordinal() for day in person.holidays)
+        return sum(
+            1 for block in holidays
+            for day in block
+            if day.toordinal() not in personHolidaySet
+        )
 
 
     @staticmethod
@@ -256,80 +274,6 @@ class AutoHoliday:
                 wk.value for wk in weekends
             ]
         ]
-
-
-    @staticmethod
-    def __prefix_free_days__(is_free : List[int]) -> List[int]:
-        """
-        Build a Prefix-Sum Array over the Free-Day Indicator List
-
-        Enables O(1) computation of the number of free (non-PTO) days
-        within any date range ``[i, j]`` via
-        ``prefix[j + 1] - prefix[i]``.
-
-        :type  is_free: List[int]
-        :param is_free: A binary array where ``1`` marks a free day
-            (weekend or public holiday) and ``0`` marks a working day
-            that requires a PTO deduction.
-
-        :rtype:  List[int]
-        :return: A prefix-sum array of length ``len(is_free) + 1`` where
-            index ``k`` holds the cumulative count of free days in
-            ``is_free[0 : k]``.
-        """
-
-        prefix = [0] * (len(is_free) + 1)
-        for idx, v in enumerate(is_free):
-            prefix[idx + 1] = prefix[idx] + v
-
-        return prefix
-
-
-    @staticmethod
-    def __pta_at_date__(
-        person : PersonConstruct,
-        date : dt.date
-    ) -> int:
-        """
-        Return the Cumulative PTO Balance Available on a Given Date
-
-        Computes the total paid time off that a person may draw from on
-        or before ``date`` by summing the opening balance and all credit
-        entries whose credit date is on or before ``date``.
-
-        :type  person: PersonConstruct
-        :param person: A person construct with an opening balance and a
-            list of :class:`CreditDays` entitlements.
-
-        :type  date: dt.date
-        :param date: The reference date used to filter credit entries.
-
-        :rtype:  int
-        :return: Total PTO days available (opening balance plus all
-            credits whose ``date`` field is on or before ``date``).
-        """
-
-        return person.opening + sum(
-            c.days for c in person.creditDays
-            if c.date <= date
-        )
-
-
-    def __validate_strategy__(self, strategy : str) -> str:
-        """
-        Validate the strategy value based on the list of valid
-        strategies. The function raises an assertion error if the
-        strategy is invalid. The following types of strategies are
-        available:
-
-            * balanced: A strategy that mixes short and long holidays
-                to provide a balanced holiday plan for the person(s).
-        """
-
-        valid = ["balanced"]
-        assert strategy in valid, f"Invalid Strategy: {strategy}"
-
-        return strategy
 
 
     def __update_holidays__(
