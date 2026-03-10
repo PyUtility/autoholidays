@@ -9,6 +9,7 @@ person based on different scenarios.
 import datetime as dt
 
 from typing import List, Tuple, Dict
+from itertools import pairwise, chain
 
 from autoholidays.person import PersonConstruct
 from autoholidays.calendar import PlanningCycle, ENUMDays
@@ -62,6 +63,84 @@ class AutoHoliday:
         spacing = self.spacing[strategy]
         lengthRange = self.length[strategy]
         return spacing, lengthRange
+
+
+    @staticmethod
+    def getAxiomaticRange(
+        person : PersonConstruct,
+        spacing : int,
+        lengthRange : Tuple[int, int],
+        extendTrimRange : bool = True
+    ) -> Tuple[List[List[dt.date]], List[Tuple[dt.date, dt.date]]]:
+        """
+        A method that self-evaluates a person's extended weekends and
+        returns a range of dates which already satisfies the spacing
+        and length constraints. These dates can thus be used without
+        further planning, and typically does not require a prior leave
+        requirement, unless the person falls short of holidays.
+
+        :type  person: PersonConstruct
+        :param person: A single person construct where there is a need
+            of calculation of axiomatic extended weekends.
+
+        :type  spacing: int
+        :param spacing: The number of days between two consecutive
+            holidays, i.e., there is no requirement for another leave
+            between the two consecutive holidays.
+
+        :type  lengthRange: Tuple[int, int]
+        :param lengthRange: A tuple containing the minimum and maximum
+            length of total holidays (that includes public holidays,
+            weekends, and weekly off days).
+
+        :type  extendTrimRange: bool
+        :param extendTrimRange: A flag to also ignore a set of days
+            before and after the identified ``axioms``, such that the
+            search area reduces further; defaults to True.
+        """
+
+        extWk = {
+            key : dict(
+                dates = value,
+                length = len(value)
+            )
+            for key, value in AutoHoliday.extendedWeekends(
+                person.holidays
+            ).items()
+        }
+
+        # get valid weekends, a set of extended weekends that has
+        # enough "spacing" and thus axiomatic holiday ranges
+        valid = [
+            (ckey, nkey)
+            for (ckey, cvalue), (nkey, nvalue) in pairwise({
+                key : value["dates"] for key, value in extWk.items()
+                if value["length"] >= lengthRange[0]
+            }.items())
+            if (nvalue[0] - cvalue[-1]).days <= spacing
+        ]
+
+        # ? the valid dates are range of dates from the already
+        # calculated axiomatic long weekends; preserve the result
+        dates = [
+            extWk[axioms]["dates"]
+            for axioms in chain.from_iterable(valid)
+        ]
+
+        # ! narrow down the search dates, by reducing the dates range
+        # this can be done by filtering the days between which axioms
+        # were identified, in addition also exclude ± spacing days
+        # ..versionchanged:: 2026-03-10 this is a parametric control
+        addDays = spacing if extendTrimRange else 0
+        ignores = [
+            (
+                extWk[cur]["dates"][0] - dt.timedelta(days = addDays),
+                extWk[nxt]["dates"][-1] + dt.timedelta(days = addDays)
+            )
+            for (cur, nxt) in valid
+        ]
+
+        return dates, ignores
 
 
     @staticmethod
