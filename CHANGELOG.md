@@ -50,28 +50,20 @@ under `h3` tags, while the `micro` and "version identifiers" are listed under `h
 
 </details>
 
-### AutoHolidays v0.0.2.dev1 | 2026-03-10
+### AutoHolidays v1.0.0 | 2026-03-11
 
-A basic version that can calculate the holidays for a single person based on a set of dynamic programming; however the coding
-is not stable and results in holidays being pushed to the beginning of the planning cycle.
+I'm pleased to announce the first stable release of **`autoholidays`** a module dedicated towards finding the ideal
+holidays based on a group of individual(s) leaves, weekly-offs and regional holiday list. This is a hobby project, that
+I'd embarked to automate the leave planning for me and my *better half*, but obviously sky is the limit!
 
-The package is registered in PyPI, and can be installed using `pip` command as follows:
+The package is available in [PyPI](https://pypi.org/project/autoholidays/) and can be installed using `pip` as
+below:
 
-```shell
-pip install autoholidays
+```
+pip install -U autoholidays
 ```
 
-### AutoHolidays v0.0.2.dev0 | 2026-03-05
-
-A basic version (currently in planning stage) that underlines the capabilities, objective of the package. In addition, the version
-tag denotes that this is a developmental release and may change significantly in due development course.
-
-The package is registered in PyPI, and can be installed using `pip` command as follows:
-
-```shell
-pip install autoholidays
-```
-
-Something awesome is being cooked, stay tuned!
+The module can be used by both an individual and a group of individuals. The initial version gives a raw package to
+*play-around*, uses manual insertion of holidays and other details to calculate optimum holidays.
 
 </div>
