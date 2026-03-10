@@ -61,10 +61,10 @@ An ideal example of optimal leave planning can be as below markdown table:
 | 26-05-2026 |  |  |  |  |  | 26-05-2026 | 1 | 1 |
 | 27-05-2026 |  |  |  |  |  | 27-05-2026 | 1 | 1 |
 | 28-05-2026 | H |  |  | OFF | OFF | 28-05-2026 | 0 | 0 |
-| 29-05-2026 |  |  |  |  |  | 29-05-2026 | 1 | 1 |
-| 30-05-2026 |  | TRUE |  | OFF |  | 30-05-2026 | 0 | 1 |
-| 31-05-2026 |  | TRUE | TRUE | OFF | OFF | 31-05-2026 | 0 | 0 |
-|  |  |  |  |  |  |  | 10 | 15 |
+| 29-05-2026 |  |  |  |  |  |  | 0 | 0 |
+| 30-05-2026 |  | TRUE |  | OFF |  |  | 0 | 0 |
+| 31-05-2026 |  | TRUE | TRUE | OFF | OFF |  | 0 | 0 |
+|  |  |  |  |  |  |  | 9 | 13 |
 
 
 Use the following `persons` and `planningCycle` to test and validate the result:
@@ -77,7 +77,7 @@ import autoholidays as ah
 
 persons = [
   ah.person.PersonConstruct(
-    name = "John Doe", holidays = holidays.IN(years = 2026),
+    name = "John Doe", holidays = holidays.IN(years = [2026, 2027]),
     creditDays = [
       ah.calendar.CreditDays(name = "GL", days = 9, date = dt.date(2026, 4, 1)),
       ah.calendar.CreditDays(name = "PL", days = 21, date = dt.date(2026, 4, 1))
@@ -85,7 +85,7 @@ persons = [
   ),
 
   ah.person.PersonConstruct(
-    name = "Jane Doe", holidays = holidays.IN(years = 2026),
+    name = "Jane Doe", holidays = holidays.IN(years = [2026, 2027]),
     weekoff = [ ah.calendar.ENUMDays.SUNDAY ],
     creditDays = [
       ah.calendar.CreditDays(name = "EL-Q1", days = 9, date = dt.date(2026, 1, 1)),
@@ -96,6 +96,6 @@ persons = [
   )
 ]
 
-cycle = ah.calendar.PlanningCycle(start = dt.date(2026, 4, 1), final = dt.date(2026, 5, 31))
+cycle = ah.calendar.PlanningCycle(start = dt.date(2026, 4, 1), final = dt.date(2027, 3, 31))
 planner = ah.AutoHoliday(cycle = cycle, persons = persons)
 ```

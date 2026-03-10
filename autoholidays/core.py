@@ -47,12 +47,27 @@ class AutoHoliday:
         self.persons = self.__update_holidays__(persons)
 
 
-    def plan(self) -> List[List[dt.date]]:
+    def plan(
+        self,
+        spacing : int = 17,
+        lengthRange : Tuple[int, int] = (3, 15)
+    ) -> List[List[dt.date]]:
         """
         Plan optimal holidays for a group of person based on a
         planning strategy, uses dynamic programming to iterate over
         the holidays. The function returns a list of list of holidays
         ideal for all the person(s).
+
+        :type  spacing: int
+        :param spacing: A parameter to control and spread the holidays
+            over the planning cycle by limiting the minimum number of
+            days between two consecutive days for all individual(s).
+            Defaults to 17, i.e., atleast 17 days gap between the two
+            consecutive holidays, unless there is a extended holiday.
+
+        :type  lengthRange: Tuple[int, int]
+        :param lengthRange: A tuple of minimum and maximum number of
+            days for a holiday, defaults to (3, 15).
         """
 
         start, final = self.cycle.start, self.cycle.final
@@ -65,7 +80,8 @@ class AutoHoliday:
             set([day.toordinal() for day in person.holidays])
             for person in self.persons
         ]
-        collectiveHolidays = sorted(set().union(*individualHolidays))
+        collectiveHolidaysSet = set().union(*individualHolidays)
+        collectiveHolidays = sorted(collectiveHolidaysSet)
 
         def walkLeft(hOrd : int) -> int:
             """
@@ -78,7 +94,7 @@ class AutoHoliday:
 
             while (
                 (dOrd >= startOrdinal) and
-                (dOrd not in collectiveHolidays)
+                (dOrd not in collectiveHolidaysSet)
             ):
                 dOrd -= 1
 
@@ -87,7 +103,7 @@ class AutoHoliday:
 
             while (
                 ((dOrd - 1) >= startOrdinal) and
-                ((dOrd - 1) in collectiveHolidays)
+                ((dOrd - 1) in collectiveHolidaysSet)
             ):
                 dOrd -= 1
 
@@ -104,7 +120,7 @@ class AutoHoliday:
 
             while (
                 (dOrd <= finalOrdinal) and
-                (dOrd not in collectiveHolidays)
+                (dOrd not in collectiveHolidaysSet)
             ):
                 dOrd += 1
 
@@ -113,58 +129,76 @@ class AutoHoliday:
 
             while (
                 ((dOrd + 1) <= finalOrdinal) and
-                ((dOrd + 1) in collectiveHolidays)
+                ((dOrd + 1) in collectiveHolidaysSet)
             ):
                 dOrd += 1
 
             return dOrd
 
-        # ! create an ideal list of holidays from individual walks
-        ideal : Dict[int, Set[int]] = {
-            idx : set() for idx in range(len(self.persons))
-        }
-
+        # ! collect unique off-day blocks from all collective holidays
+        blockSet : Set[Tuple[int, int]] = set()
         for day in collectiveHolidays:
-            left, right = walkLeft(day), walkRight(day)
-            
-            for idx in range(len(self.persons)):
-                ideal[idx].update(
-                    dOrd for dOrd in range(left, right + 1)
-                    if dOrd not in individualHolidays[idx]
-                )
+            blockSet.add((walkLeft(day), walkRight(day)))
 
-        # ! calculate the final return resilt iterable
-        result : List[List[dt.date]] = []
-        for idx in range(len(self.persons)):
-            person = self.persons[idx]
+        # ! filter blocks by lengthRange span and spacing gap constraints
+        minLen, maxLen = lengthRange
+        approvedBlocks : List[Tuple[int, int]] = []
+        lastRight : int = startOrdinal - spacing - 1
 
-            scheduled = [
+        for left, right in sorted(blockSet):
+            span = right - left + 1
+            if span < minLen or span > maxLen:
+                continue
+            if left < lastRight + spacing:
+                continue
+            approvedBlocks.append((left, right))
+            lastRight = right
+
+        # ! calculate the final return result iterable
+        return [
+            [
                 dt.datetime.fromordinal(dOrd).date()
-                for dOrd in sorted(ideal[idx])
+                for dOrd in range(left, right + 1)
             ]
+            for left, right in approvedBlocks
+        ]
 
-            credits = sorted([
-                (cd.date, cd.days) for cd in person.creditDays
-            ], key = lambda x : x[0])
 
-            balance, creditIndex = 0, 0
+    @staticmethod
+    def calculateLeaveDays(
+        person : PersonConstruct,
+        holidays : List[List[dt.date]]
+    ) -> int:
+        """
+        Calculate the Number of Leave Days Required by a Person.
 
-            approved : List[dt.date] = []
-            for day in scheduled:
-                while (
-                    (creditIndex < len(credits)) and
-                    credits[creditIndex][0] <= day
-                ):
-                    balance += credits[creditIndex][1]
-                    creditIndex += 1
+        Iterates over all days in each approved holiday block and
+        counts the days that are not already covered by the person's
+        existing public holidays or weekly offs. The result is the
+        number of leave days the person must consume to enjoy the
+        full off-period.
 
-                if balance > 0:
-                    approved.append(day)
-                    balance -= 1
+        :type  person: PersonConstruct
+        :param person: The person construct for whom the leave days
+            are to be calculated, using the construct defined in
+            :mod:`autoholidays.person`.
 
-            result.append(approved)
+        :type  holidays: List[List[dt.date]]
+        :param holidays: A list of approved holiday blocks, typically
+            the return value of :func:`plan`, where each inner list
+            contains all calendar dates in one off-period block.
 
-        return result
+        :rtype:  int
+        :return: Total number of leave days the person needs to take
+            across all provided holiday blocks.
+        """
+
+        personHolidaySet = set(day.toordinal() for day in person.holidays)
+        return sum(
+            1 for block in holidays
+            for day in block
+            if day.toordinal() not in personHolidaySet
+        )
 
 
     @staticmethod
