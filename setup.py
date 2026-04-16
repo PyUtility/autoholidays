@@ -24,7 +24,7 @@ setup(
     ),
     install_requires = [
         "holidays>=0.92",
-        "pydantic==2.12.5",
+        "pydantic==2.13.1",
     ],
     classifiers = [
         "Development Status :: 1 - Planning",
