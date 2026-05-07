@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "holidays>=0.92",
-    "pydantic==2.12.5",
+    "pydantic==2.13.4",
     "setuptools==82.0.1",
     "wheel==0.46.3",
 ]
@@ -37,7 +37,7 @@ classifiers = [
 ]
 dependencies = [
     "holidays>=0.92",
-    "pydantic==2.12.5",
+    "pydantic==2.13.4",
 ]
 
 [tool.setuptools]
